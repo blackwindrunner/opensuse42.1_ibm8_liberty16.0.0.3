@@ -2,11 +2,11 @@ FROM opensuse:42.1
 
 MAINTAINER Yan Dongpeng <yandongpeng@qq.com>
 
-RUN zypper update \
-    && zypper install -y wget ca-certificates \
+RUN zypper -n update \
+    && zypper -n install -y wget ca-certificates tar unzip \
     && rm -rf /var/lib/apt/lists/*
 # Install IBM jre8
-ENV JAVA_VERSION 1.8.0_sr3fp12
+ENV JAVA_VERSION=1.8.0_sr3fp12
 
 RUN ESUM="5248e1ece213033ffc3f80702736a1bb2ec2fcfc8e82f4c38322e8c5cf42bfe8" \
     && BASE_URL="https://public.dhe.ibm.com/ibmdl/export/pub/systems/cloud/runtimes/java/meta/" \
@@ -29,7 +29,7 @@ ENV JAVA_HOME=/opt/ibm/java/jre \
     PATH=/opt/ibm/java/jre/bin:$PATH
     
 # Install WebSphere Liberty
-ENV LIBERTY_VERSION 16.0.0_03
+ENV LIBERTY_VERSION=16.0.0_03
 ARG LIBERTY_URL
 ARG DOWNLOAD_OPTIONS=""
 RUN LIBERTY_URL=${LIBERTY_URL:-$(wget -q -O - https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/downloads/wlp/index.yml  | grep $LIBERTY_VERSION -A 6 | sed -n 's/\s*kernel:\s//p' | tr -d '\r' )}  \
