@@ -5,7 +5,7 @@ MAINTAINER Yan Dongpeng <yandongpeng@qq.com>
 RUN zypper update \
     && zypper install -y wget ca-certificates \
     && rm -rf /var/lib/apt/lists/*
-
+# Install IBM jre8
 ENV JAVA_VERSION 1.8.0_sr3fp12
 
 RUN ESUM="5248e1ece213033ffc3f80702736a1bb2ec2fcfc8e82f4c38322e8c5cf42bfe8" \
@@ -27,3 +27,39 @@ RUN ESUM="5248e1ece213033ffc3f80702736a1bb2ec2fcfc8e82f4c38322e8c5cf42bfe8" \
 
 ENV JAVA_HOME=/opt/ibm/java/jre \
     PATH=/opt/ibm/java/jre/bin:$PATH
+    
+# Install WebSphere Liberty
+ENV LIBERTY_VERSION 16.0.0_03
+ARG LIBERTY_URL
+ARG DOWNLOAD_OPTIONS=""
+RUN LIBERTY_URL=${LIBERTY_URL:-$(wget -q -O - https://public.dhe.ibm.com/ibmdl/export/pub/software/websphere/wasdev/downloads/wlp/index.yml  | grep $LIBERTY_VERSION -A 6 | sed -n 's/\s*kernel:\s//p' | tr -d '\r' )}  \
+    && wget $DOWNLOAD_OPTIONS $LIBERTY_URL -U UA-IBM-WebSphere-Liberty-Docker -O /tmp/wlp.zip \
+    && unzip -q /tmp/wlp.zip -d /opt/ibm \
+    && rm /tmp/wlp.zip
+ENV PATH=/opt/ibm/wlp/bin:$PATH
+
+# Set Path Shortcuts
+ENV LOG_DIR=/logs \
+    WLP_OUTPUT_DIR=/opt/ibm/wlp/output
+RUN mkdir /logs \
+    && ln -s $WLP_OUTPUT_DIR/defaultServer /output \
+    && ln -s /opt/ibm/wlp/usr/servers/defaultServer /config
+
+# Configure WebSphere Liberty
+RUN /opt/ibm/wlp/bin/server create \
+    && rm -rf $WLP_OUTPUT_DIR/.classCache /output/workarea
+COPY docker-server /opt/ibm/docker/
+EXPOSE 9080 9443
+
+CMD ["/opt/ibm/docker/docker-server", "run", "defaultServer"]
+
+#Profile7
+ARG REPOSITORIES_PROPERTIES=""
+
+COPY server.xml /config/
+
+RUN if [ ! -z $REPOSITORIES_PROPERTIES ]; then mkdir /opt/ibm/wlp/etc/ \
+    && echo $REPOSITORIES_PROPERTIES > /opt/ibm/wlp/etc/repositories.properties; fi \
+    && installUtility install --acceptLicense webProfile-7.0 \
+    && if [ ! -z $REPOSITORIES_PROPERTIES ]; then rm /opt/ibm/wlp/etc/repositories.properties; fi \
+    && rm -rf /output/workarea /output/logs
