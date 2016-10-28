@@ -3,8 +3,9 @@ FROM opensuse:42.1
 MAINTAINER Yan Dongpeng <yandongpeng@qq.com>
 
 RUN zypper -n update \
-    && zypper -n install -y wget ca-certificates tar unzip \
+    && zypper -n install -y wget ca-certificates tar unzip\
     && rm -rf /var/lib/apt/lists/*
+
 # Install IBM jre8
 ENV JAVA_VERSION=1.8.0_sr3fp12
 
