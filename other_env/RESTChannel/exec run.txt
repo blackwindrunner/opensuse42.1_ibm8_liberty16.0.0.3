@@ -1,0 +1,5 @@
+docker run -it -d -P -v /Users/BTT/Documents/btt/test/test\ case/TestRestChannel.war:/config/dropins/TestRestChannel.war -v /Users/BTT/Documents/btt/test/test\ case/server.xml:/config/server.xml -v /Users/BTT/Documents/docker/volume:/tmp/btt --name bttrestful ghostaa/opensuse42.1_ibm8_liberty16.0.0.3 /bin/bash
+
+
+docker run -it -d -P -v /Users/BTT/Documents/btt/test/test\ case/TestRestChannel.war:/usr/local/tomcat/webapps/TestRestChannel.war -v /Users/BTT/Documents/docker/volume:/tmp/btt --name btttomcat tomcat /bin/bash
+
